@@ -94,7 +94,7 @@ private fun NativeMandal() {
                         modifier = Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(12.dp)).padding(12.dp),
                         decorationBox = { inner -> Box { if (query.isEmpty()) Text("جست‌وجوی نام، نماد یا عدد اتمی…", color = Muted); inner() } })
                     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        listOf("همه", "نافلز", "فلز قلیایی", "فلز واسطه", "گاز نجیب", "هالوژن", "شبه‌فلز", "لانتانید", "اکتینید").forEach {
+                        listOf("همه", "نافلز", "فلز قلیایی", "فلز قلیایی خاکی", "فلز واسطه", "گاز نجیب", "هالوژن", "شبه‌فلز", "لانتانید", "اکتینید").forEach {
                             OutlinedButton(onClick = { category = it }, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 3.dp)) {
                                 Text(it, fontSize = 10.sp, color = if (category == it) Cyan else Muted)
                             }
@@ -148,7 +148,7 @@ private fun NativeMandal() {
                         ElementPicker("عنصر دوم", second) { second = it }
                         ElementPicker("عنصر سوم (اختیاری)", third) { third = it }
                         val picked = listOf(first, second) + if (third == 0) emptyList() else listOf(third)
-                        val found = knownCompounds.filter { it.numbers.sorted() == picked.sorted() }
+                        val found = knownCompounds.filter { it.numbers.distinct().sorted() == picked.distinct().sorted() }
                         NativeMolecule(picked.mapNotNull { n -> periodicElements.find { it.number == n } })
                         if (found.isEmpty()) {
                             Text("برای این انتخاب، ترکیبی در فهرست محدود آموزشی ثبت نشده است؛ این به معنی ناممکن بودن واکنش نیست.", color = Color(0xFFFFCE70), fontSize = 13.sp)
@@ -234,8 +234,11 @@ private fun ElementPicker(label: String, number: Int, onPick: (Int) -> Unit) {
     val e = periodicElements.find { it.number == number }
     Column {
         Text(label, color = Muted, fontSize = 12.sp)
-        OutlinedButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
-            Text(e?.let { it.symbol + " — " + it.persianName } ?: "انتخاب عنصر")
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedButton(onClick = { expanded = !expanded }, modifier = Modifier.weight(1f)) {
+                Text(e?.let { it.symbol + " — " + it.persianName } ?: "انتخاب عنصر")
+            }
+            if (label.contains("سوم") && number != 0) TextButton(onClick = { onPick(0) }) { Text("پاک‌کردن") }
         }
         if (expanded) {
             LazyVerticalGrid(columns = GridCells.Fixed(4), modifier = Modifier.height(130.dp).background(Navy, RoundedCornerShape(9.dp))) {
