@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 
@@ -22,7 +21,9 @@ class MainActivity : Activity() {
             setBackgroundColor(android.graphics.Color.rgb(7, 17, 31))
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
-            settings.allowFileAccess = false
+            // Local packaged HTML must be readable for file:///android_asset/index.html.
+            // Content-provider access remains disabled and no network permission is declared.
+            settings.allowFileAccess = true
             settings.allowContentAccess = false
             settings.setSupportZoom(true)
             settings.builtInZoomControls = true
