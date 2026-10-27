@@ -3,6 +3,11 @@ package org.mandal.elements
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,20 +80,22 @@ private fun NativeMandal() {
                     Text("آزمایشگاه بومی عناصر · Native Android", fontSize = 12.sp, color = Muted)
                 }
             }
-            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
-                Column(Modifier.padding(14.dp)) {
-                    Text("جهان ماده را کشف کن", fontSize = 23.sp, fontWeight = FontWeight.Bold)
-                    Text("جدول تناوبی، شناسنامهٔ عناصر و آزمایشگاه آموزشی؛ با رابط بومی اندروید.", color = Muted, fontSize = 12.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
-                        Metric("118", "عنصر")
-                        Metric("18", "گروه")
-                        Metric("Native", "رابط بومی")
+            DashboardHero()
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                Metric("118", "عنصر")
+                Metric("18 / 7", "گروه / دوره")
+                Metric("s · p · d · f", "بلوک‌ها")
+            }
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                listOf("روندهای تناوبی", "اتم‌های درخشان", "مدل مولکولی", "کاربردهای واقعی").forEachIndexed { i, label ->
+                    Surface(color = if (i == 0) Color(0xFF123B4B) else Panel, shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Cyan.copy(alpha = 0.22f))) {
+                        Text(label, Modifier.padding(horizontal = 10.dp, vertical = 8.dp), color = if (i == 0) Cyan else Muted, fontSize = 11.sp)
                     }
                 }
             }
             when (tab) {
                 0 -> {
-                    Text("جدول تناوبی", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("جدول تناوبی · ۱۸ گروه / ۷ دوره", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     BasicTextField(value = query, onValueChange = { query = it }, singleLine = true,
                         textStyle = androidx.compose.ui.text.TextStyle(color = Ink, fontSize = 14.sp),
                         modifier = Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(12.dp)).padding(12.dp),
@@ -114,7 +121,7 @@ private fun NativeMandal() {
                     }
                 }
                 1 -> {
-                    Text("شناسنامهٔ عنصر", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("شناسنامهٔ عنصر · مدل اتمی متحرک", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Column(Modifier.fillMaxWidth().weight(1f).background(Panel, RoundedCornerShape(18.dp)).padding(18.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -141,7 +148,7 @@ private fun NativeMandal() {
                     }
                 }
                 else -> {
-                    Text("آزمایشگاه ترکیب‌ها", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("آزمایشگاه پیوندها · مولکول‌نما", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("نمونه‌های ثبت‌شده از ترکیب‌های شناخته‌شده؛ این ابزار پیش‌بینی واکنش نیست.", color = Muted, fontSize = 12.sp)
                     Column(Modifier.fillMaxWidth().weight(1f).background(Panel, RoundedCornerShape(18.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                         ElementPicker("عنصر اول", first) { first = it }
@@ -169,6 +176,49 @@ private fun NativeMandal() {
 }
 
 @Composable
+private fun DashboardHero() {
+    val transition = rememberInfiniteTransition(label = "chemistry-motion")
+    val orbitAngle by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(9000), RepeatMode.Restart), label = "orbit")
+    val pulse by transition.animateFloat(0.82f, 1.08f, infiniteRepeatable(tween(1400), RepeatMode.Reverse), label = "pulse")
+    Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp), border = BorderStroke(1.dp, Cyan.copy(alpha = 0.28f))) {
+        Column(Modifier.fillMaxWidth().padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("MANDAL · ماده در حرکت", color = Cyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("جهان عناصر را کشف کن", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("جدول تناوبی • پیوندها • ساختار ماده", color = Muted, fontSize = 11.sp)
+                }
+                Box(Modifier.size(94.dp), contentAlignment = Alignment.Center) {
+                    listOf(Cyan, Color(0xFF8C7BFF), Color(0xFFFFC96B)).forEachIndexed { i, c ->
+                        Box(Modifier.size((42 + i * 22).dp, (22 + i * 16).dp), contentAlignment = Alignment.Center) {
+                            Surface(Modifier.fillMaxSize(), color = Color.Transparent, shape = RoundedCornerShape(50), border = BorderStroke(1.dp, c.copy(alpha = 0.75f))) {}
+                        }
+                    }
+                    Box(Modifier.size((22 * pulse).dp).background(Brush.radialGradient(listOf(Color.White, Cyan, Color(0xFF2479B8))), RoundedCornerShape(50)))
+                    Text("e⁻", Modifier.offset(x = (30 * kotlin.math.cos(Math.toRadians(orbitAngle.toDouble()))).dp, y = (30 * kotlin.math.sin(Math.toRadians(orbitAngle.toDouble()))).dp), color = Color(0xFFFFD479), fontSize = 13.sp, fontWeight = FontWeight.Black)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, Cyan, Color(0xFF8C7BFF), Color.Transparent))))
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                listOf(Triple("H₂O", "آب", Color(0xFF55E6EF)), Triple("CO₂", "دی‌اکسید کربن", Color(0xFF8D9DFF)), Triple("NaCl", "نمک", Color(0xFFFFC96B))).forEach { item ->
+                    Column(Modifier.weight(1f).background(Navy, RoundedCornerShape(12.dp)).padding(vertical = 9.dp, horizontal = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(item.first, color = item.third, fontSize = 21.sp, fontWeight = FontWeight.ExtraBold)
+                        Text(item.second, color = Muted, fontSize = 9.sp, textAlign = TextAlign.Center, maxLines = 1)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                            repeat(3) { n -> Box(Modifier.padding(horizontal = 2.dp).size((5 + n % 2 * 2).dp).background(item.third.copy(alpha = 0.85f), RoundedCornerShape(50))) }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text("نمایش‌های متحرک شماتیک برای یادگیری؛ نه شبیه‌سازی کوانتومی دقیق.", color = Muted, fontSize = 10.sp)
+        }
+    }
+}
+
+@Composable
 private fun Metric(value: String, caption: String) {
     Column(Modifier.background(Navy, RoundedCornerShape(11.dp)).padding(horizontal = 11.dp, vertical = 8.dp)) {
         Text(value, color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -179,9 +229,9 @@ private fun Metric(value: String, caption: String) {
 @Composable
 private fun ElementTile(e: Element, selected: Boolean, onClick: () -> Unit) {
     val tint = when (e.category) {
-        "alkali" -> Color(0xFF773B55); "alkaline" -> Color(0xFF79552F); "transition" -> Color(0xFF285B72)
-        "post" -> Color(0xFF315D58); "metalloid" -> Color(0xFF5B527D); "nonmetal" -> Color(0xFF2E6D66)
-        "halogen" -> Color(0xFF38618A); "noble" -> Color(0xFF654C91); "lanth" -> Color(0xFF6B4C7B)
+        "alkali" -> Color(0xFF9D3348); "alkaline" -> Color(0xFFB56A28); "transition" -> Color(0xFF155DB5)
+        "post" -> Color(0xFF168A83); "metalloid" -> Color(0xFF479A54); "nonmetal" -> Color(0xFF248C78)
+        "halogen" -> Color(0xFF8753C5); "noble" -> Color(0xFF6946BC); "lanth" -> Color(0xFFB24D9C)
         "act" -> Color(0xFF80475E); else -> Panel
     }
     Column(Modifier.aspectRatio(0.83f).background(if (selected) Cyan.copy(alpha = 0.22f) else tint, RoundedCornerShape(9.dp))
