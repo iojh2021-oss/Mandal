@@ -85,19 +85,7 @@ private fun NativeMandal() {
                     Text("آزمایشگاه بومی عناصر · Native Android", fontSize = 12.sp, color = Muted)
                 }
             }
-            DashboardHero()
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                Metric("118", "عنصر")
-                Metric("18 / 7", "گروه / دوره")
-                Metric("s · p · d · f", "بلوک‌ها")
-            }
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                listOf("روندهای تناوبی", "اتم‌های درخشان", "مدل مولکولی", "کاربردهای واقعی").forEachIndexed { i, label ->
-                    Surface(color = if (i == 0) Color(0xFF123B4B) else Panel, shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Cyan.copy(alpha = 0.22f))) {
-                        Text(label, Modifier.padding(horizontal = 10.dp, vertical = 8.dp), color = if (i == 0) Cyan else Muted, fontSize = 11.sp)
-                    }
-                }
-            }
+            Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, Cyan.copy(alpha = .7f), Color(0xFF9A8CFF), Color.Transparent))))
             when (tab) {
                 0 -> {
                     Text("جدول تناوبی · ۱۸ گروه / ۷ دوره", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -127,7 +115,7 @@ private fun NativeMandal() {
                 }
                 1 -> {
                     Text("شناسنامهٔ عنصر · مدل اتمی متحرک", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Column(Modifier.fillMaxWidth().weight(1f).background(Panel, RoundedCornerShape(18.dp)).padding(18.dp)) {
+                    Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).background(Panel, RoundedCornerShape(18.dp)).padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(selected.number.toString(), color = Muted)
@@ -145,7 +133,6 @@ private fun NativeMandal() {
                         InfoRow("گروه", selected.group.toString())
                         Spacer(Modifier.height(12.dp))
                         Text("مدل اتمی شماتیک و آموزشی است؛ مکان کوانتومی الکترون‌ها را نمایش نمی‌دهد.", color = Muted, fontSize = 12.sp)
-                        Spacer(Modifier.weight(1f))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = { selectedNumber = if (selectedNumber == 1) 118 else selectedNumber - 1 }) { Text("قبلی") }
                             Button(onClick = { selectedNumber = if (selectedNumber == 118) 1 else selectedNumber + 1 }) { Text("بعدی") }
@@ -155,7 +142,7 @@ private fun NativeMandal() {
                 2 -> {
                     Text("آزمایشگاه پیوندها · مولکول‌نما", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("نمونه‌های ثبت‌شده از ترکیب‌های شناخته‌شده؛ این ابزار پیش‌بینی واکنش نیست.", color = Muted, fontSize = 12.sp)
-                    Column(Modifier.fillMaxWidth().weight(1f).background(Panel, RoundedCornerShape(18.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).background(Panel, RoundedCornerShape(18.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                         ElementPicker("عنصر اول", first) { first = it }
                         ElementPicker("عنصر دوم", second) { second = it }
                         ElementPicker("عنصر سوم (اختیاری)", third) { third = it }
@@ -364,14 +351,33 @@ private fun InfoRow(label: String, value: String) {
 
 @Composable
 private fun NativeAtom(e: Element) {
-    Box(Modifier.size(105.dp), contentAlignment = Alignment.Center) {
-        listOf(Cyan, Color(0xFF9A8CFF), Color(0xFFFFCE70)).forEachIndexed { index, color ->
-            Box(Modifier.size((42 + index * 24).dp, (24 + index * 18).dp), contentAlignment = Alignment.Center) {
-                Surface(Modifier.fillMaxSize(), color = Color.Transparent, shape = RoundedCornerShape(50), border = BorderStroke(1.dp, color.copy(alpha = 0.7f))) {}
+    val motion = rememberInfiniteTransition(label = "atom-render")
+    val rotation by motion.animateFloat(0f, 360f, infiniteRepeatable(tween(7200), RepeatMode.Restart), label = "atom-orbit")
+    Canvas(Modifier.size(124.dp)) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val unit = size.minDimension
+        // Dark radial backdrop, luminous orbital tracks and a shaded nucleus create a stronger pseudo-3D look.
+        drawCircle(Brush.radialGradient(listOf(Color(0xFF163D58).copy(alpha = .65f), Color(0xFF07111F).copy(alpha = .05f)), center = Offset(cx, cy), radius = unit * .49f), radius = unit * .49f, center = Offset(cx, cy))
+        val colors = listOf(Cyan, Color(0xFF9A8CFF), Color(0xFFFFCE70))
+        colors.forEachIndexed { i, color ->
+            val ovalW = unit * (.48f + i * .13f)
+            val ovalH = unit * (.22f + i * .075f)
+            val angle = rotation + i * 60f
+            rotate(angle, pivot = Offset(cx, cy)) {
+                drawOval(color.copy(alpha = .75f), topLeft = Offset(cx - ovalW / 2f, cy - ovalH / 2f), size = androidx.compose.ui.geometry.Size(ovalW, ovalH), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4f))
+                val ex = cx + ovalW / 2f * kotlin.math.cos(Math.toRadians((rotation * (1.0 + i * .15)).toDouble())).toFloat()
+                val ey = cy + ovalH / 2f * kotlin.math.sin(Math.toRadians((rotation * (1.0 + i * .15)).toDouble())).toFloat()
+                drawCircle(Brush.radialGradient(listOf(Color.White, color, color.copy(alpha = .25f)), center = Offset(ex - 2f, ey - 2f), radius = 7f), radius = 4.4f, center = Offset(ex, ey))
+                drawCircle(color.copy(alpha = .25f), radius = 8f, center = Offset(ex, ey))
             }
         }
-        Box(Modifier.size(29.dp).background(Cyan, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
-            Text(e.symbol.take(1), color = Navy, fontWeight = FontWeight.Black)
+        drawCircle(Color(0xFF4FCFF2).copy(alpha = .18f), radius = unit * .19f, center = Offset(cx, cy))
+        drawCircle(Brush.radialGradient(listOf(Color.White, Color(0xFF7BEAFF), Color(0xFF1879B7), Color(0xFF092D55)), center = Offset(cx - unit * .035f, cy - unit * .045f), radius = unit * .18f), radius = unit * .135f, center = Offset(cx, cy))
+        repeat(5) { i ->
+            val a = i * 2.399
+            val r = unit * (.025f + (i % 2) * .035f)
+            drawCircle(if (i % 2 == 0) Color.White else Color(0xFF7BEAFF), radius = unit * .018f, center = Offset(cx + kotlin.math.cos(a).toFloat() * r, cy + kotlin.math.sin(a).toFloat() * r))
         }
     }
 }
