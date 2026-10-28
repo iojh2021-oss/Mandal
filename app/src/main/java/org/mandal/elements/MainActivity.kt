@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -304,12 +306,61 @@ private fun ElementPicker(label: String, number: Int, onPick: (Int) -> Unit) {
 
 @Composable
 private fun NativeMolecule(elements: List<Element>) {
-    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-        elements.forEachIndexed { index, e ->
-            if (index > 0) Box(Modifier.width(19.dp).height(4.dp).background(Color(0xFFB9D6E9)))
-            Box(Modifier.size(50.dp).background(Color(0xFF285B72), RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
-                Text(e.symbol, fontWeight = FontWeight.Bold)
+    val transition = rememberInfiniteTransition(label = "molecule-3d")
+    val angle by transition.animateFloat(
+        initialValue = 0f, targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(11000), RepeatMode.Restart),
+        label = "molecule-rotation"
+    )
+    val palette = listOf(Color(0xFF55E6EF), Color(0xFFFFC96B), Color(0xFF9A8CFF), Color(0xFF79F2B3), Color(0xFFFF719D))
+    Column(Modifier.fillMaxWidth().background(Navy, RoundedCornerShape(16.dp)).padding(8.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("MOLECULAR VIEW / 3D", color = Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text("نمایش چرخان شماتیک", color = Muted, fontSize = 10.sp)
+        }
+        Canvas(Modifier.fillMaxWidth().height(150.dp)) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            val count = elements.size.coerceAtMost(8)
+            if (count == 0) {
+                drawCircle(Cyan.copy(alpha = .12f), radius = 38f, center = Offset(cx, cy))
+                drawCircle(Cyan, radius = 5f, center = Offset(cx, cy))
+            } else {
+                val coords = (0 until count).map { i ->
+                    val theta = (2.0 * Math.PI * i / count) + Math.toRadians(angle.toDouble())
+                    val ring = if (count <= 2) 44.0 else if (i % 2 == 0) 55.0 else 38.0
+                    val x3 = kotlin.math.cos(theta) * ring
+                    val y3 = kotlin.math.sin(theta) * ring * .64
+                    val z3 = kotlin.math.sin(theta + 1.1) * 30.0
+                    val perspective = 1.0 + z3 / 180.0
+                    Offset(cx + (x3 * perspective).toFloat(), cy + (y3 * perspective).toFloat())
+                }
+                for (i in 0 until count) {
+                    val next = if (count == 2) 1 - i else (i + 1) % count
+                    if (i < next || count == 2) {
+                        drawLine(Color(0xFF75E9F4).copy(alpha = .65f), coords[i], coords[next], strokeWidth = 3f)
+                        drawLine(Color.White.copy(alpha = .18f), coords[i] + Offset(0f, 2f), coords[next] + Offset(0f, 2f), strokeWidth = 1f)
+                    }
+                }
+                val order = (0 until count).sortedBy { coords[it].y }
+                order.forEach { i ->
+                    val e = elements[i]
+                    val tint = palette[e.number % palette.size]
+                    val radius = (if (count > 4) 15f else 20f) + ((coords[i].y - cy) / size.height * 5f)
+                    drawCircle(Brush.radialGradient(listOf(Color.White, tint, tint.copy(alpha = .55f)), center = coords[i] + Offset(-radius * .28f, -radius * .32f), radius = radius * 1.8f), radius = radius, center = coords[i])
+                    drawCircle(Color.White.copy(alpha = .7f), radius = 1.5f, center = coords[i] + Offset(-radius * .28f, -radius * .32f))
+                }
+            }
+            // Subtle HUD rings give the molecular viewport a sci-fi instrument-panel feel.
+            drawCircle(Cyan.copy(alpha = .12f), radius = 61f, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f))
+            drawCircle(Color(0xFF9A8CFF).copy(alpha = .13f), radius = 74f, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f))
+        }
+        if (elements.isNotEmpty()) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+                elements.take(8).forEachIndexed { i, e ->
+                    Text(e.symbol, color = palette[e.number % palette.size], fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
+                }
             }
         }
     }
