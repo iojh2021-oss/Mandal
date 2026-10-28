@@ -74,15 +74,15 @@ private fun NativeMandal() {
             }
         }
     }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(46.dp).background(Brush.linearGradient(listOf(Cyan, Color(0xFF9A8CFF))), RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
-                    Text("M", color = Navy, fontSize = 25.sp, fontWeight = FontWeight.Black)
+        Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(34.dp).background(Brush.linearGradient(listOf(Cyan, Color(0xFF9A8CFF))), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
+                    Text("M", color = Navy, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("MANDAL / ELEMENTS", fontSize = 19.sp, fontWeight = FontWeight.ExtraBold)
-                    Text("آزمایشگاه بومی عناصر · Native Android", fontSize = 12.sp, color = Muted)
+                    Text("MANDAL / ELEMENTS", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Cyan)
+                    Text("آزمایشگاه عناصر · 118 ELEMENTS", fontSize = 10.sp, color = Muted)
                 }
             }
             Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, Cyan.copy(alpha = .7f), Color(0xFF9A8CFF), Color.Transparent))))
@@ -106,7 +106,7 @@ private fun NativeMandal() {
                             e.englishName.contains(query, true) || e.number.toString().contains(query))
                     }
                     Text(filtered.size.toString() + " عنصر", color = Muted, fontSize = 12.sp)
-                    LazyVerticalGrid(columns = GridCells.Fixed(4), modifier = Modifier.fillMaxWidth().weight(1f),
+                    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = 68.dp), modifier = Modifier.fillMaxWidth().weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         items(filtered, key = { it.number }) { e ->
                             ElementTile(e, selectedNumber == e.number) { selectedNumber = e.number; tab = 1 }
