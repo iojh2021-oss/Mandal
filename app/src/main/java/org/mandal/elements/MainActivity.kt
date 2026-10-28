@@ -380,6 +380,19 @@ private fun NativeAtom(e: Element) {
             val r = unit * (.025f + (i % 2) * .035f)
             drawCircle(if (i % 2 == 0) Color.White else Color(0xFF7BEAFF), radius = unit * .018f, center = Offset(cx + kotlin.math.cos(a).toFloat() * r, cy + kotlin.math.sin(a).toFloat() * r))
         }
+        // Render the element symbol directly over the glowing nucleus.
+        drawContext.canvas.nativeCanvas.drawText(
+            e.symbol,
+            cx,
+            cy + unit * .27f,
+            android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                color = android.graphics.Color.WHITE
+                textSize = unit * .13f
+                textAlign = android.graphics.Paint.Align.CENTER
+                typeface = android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD)
+                setShadowLayer(unit * .035f, 0f, 0f, android.graphics.Color.rgb(85, 230, 239))
+            }
+        )
     }
 }
 
@@ -464,8 +477,18 @@ private fun NativeMolecule(elements: List<Element>) {
                     val e = elements[i]
                     val tint = palette[e.number % palette.size]
                     val radius = (if (count > 4) 15f else 20f) + ((coords[i].y - cy) / size.height * 5f)
-                    drawCircle(Brush.radialGradient(listOf(Color.White, tint, tint.copy(alpha = .55f)), center = coords[i] + Offset(-radius * .28f, -radius * .32f), radius = radius * 1.8f), radius = radius, center = coords[i])
-                    drawCircle(Color.White.copy(alpha = .7f), radius = 1.5f, center = coords[i] + Offset(-radius * .28f, -radius * .32f))
+                    drawCircle(tint.copy(alpha = .18f), radius = radius * 1.55f, center = coords[i])
+                    drawCircle(Brush.radialGradient(listOf(Color.White, tint, tint.copy(alpha = .78f), Color(0xFF07111F)), center = coords[i] + Offset(-radius * .3f, -radius * .35f), radius = radius * 1.8f), radius = radius, center = coords[i])
+                    drawCircle(Color.White.copy(alpha = .78f), radius = 1.7f, center = coords[i] + Offset(-radius * .28f, -radius * .32f))
+                    drawContext.canvas.nativeCanvas.drawText(
+                        e.symbol, coords[i].x, coords[i].y + radius * .33f,
+                        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                            color = android.graphics.Color.rgb(7, 17, 31)
+                            textSize = radius * .85f
+                            textAlign = android.graphics.Paint.Align.CENTER
+                            typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
+                        }
+                    )
                 }
             }
             // Subtle HUD rings give the molecular viewport a sci-fi instrument-panel feel.
