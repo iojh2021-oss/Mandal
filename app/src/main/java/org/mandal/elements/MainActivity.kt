@@ -415,6 +415,7 @@ private fun ElementPicker(label: String, number: Int, onPick: (Int) -> Unit) {
 
 @Composable
 private fun NativeMolecule(elements: List<Element>) {
+    var dragRotation by remember { mutableFloatStateOf(0f) }
     val transition = rememberInfiniteTransition(label = "molecule-3d")
     val angle by transition.animateFloat(
         initialValue = 0f, targetValue = 360f,
