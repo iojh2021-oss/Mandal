@@ -18,6 +18,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -65,9 +68,9 @@ private fun NativeMandal() {
 
     Scaffold(containerColor = Navy, bottomBar = {
         NavigationBar(containerColor = Panel) {
-            listOf("جدول", "عنصر", "آزمایشگاه").forEachIndexed { index, title ->
+            listOf("جدول", "عنصر", "آزمایشگاه", "تحلیل").forEachIndexed { index, title ->
                 NavigationBarItem(selected = tab == index, onClick = { tab = index },
-                    icon = { Text(listOf("▦", "◉", "✦")[index], color = Cyan, fontSize = 20.sp) }, label = { Text(title) })
+                    icon = { Text(listOf("▦", "◉", "✦", "⌁")[index], color = Cyan, fontSize = 20.sp) }, label = { Text(title) })
             }
         }
     }) { padding ->
@@ -149,7 +152,7 @@ private fun NativeMandal() {
                         }
                     }
                 }
-                else -> {
+                2 -> {
                     Text("آزمایشگاه پیوندها · مولکول‌نما", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("نمونه‌های ثبت‌شده از ترکیب‌های شناخته‌شده؛ این ابزار پیش‌بینی واکنش نیست.", color = Muted, fontSize = 12.sp)
                     Column(Modifier.fillMaxWidth().weight(1f).background(Panel, RoundedCornerShape(18.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
@@ -172,7 +175,113 @@ private fun NativeMandal() {
                         }
                     }
                 }
+                else -> { TrendDashboard() }
             }
+        }
+    }
+}
+
+@Composable
+private fun TrendDashboard() {
+    val scroll = rememberScrollState()
+    Column(Modifier.fillMaxSize().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("نقشهٔ روندهای تناوبی", fontSize = 21.sp, fontWeight = FontWeight.ExtraBold)
+        Text("نمای آموزشی از الگوهای عمومی جدول؛ مقدار دقیق هر عنصر را از شناسنامهٔ آن بررسی کن.", color = Muted, fontSize = 12.sp)
+        Card(colors = CardDefaults.cardColors(containerColor = Panel), border = BorderStroke(1.dp, Cyan.copy(alpha = .25f))) {
+            Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                Text("روندهای اصلی", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                TrendLine("شعاع اتمی", "افزایش به سمت چپ و پایین", "←  ↓", Color(0xFF8C7BFF))
+                TrendLine("انرژی یونش", "افزایش به سمت راست و بالا", "→  ↑", Color(0xFF55E6EF))
+                TrendLine("الکترونگاتیوی", "معمولاً افزایش به سمت راست و بالا", "→  ↑", Color(0xFFFFC96B))
+                TrendLine("خاصیت فلزی", "افزایش به سمت چپ و پایین", "←  ↓", Color(0xFF79F2B3))
+                Text("استثناهای شیمیایی وجود دارند؛ این پیکان‌ها روند کلی‌اند، نه دادهٔ عددی برای تک‌تک عناصر.", color = Muted, fontSize = 11.sp)
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Panel)) {
+            Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("راهنمای خانواده‌های عناصر", color = Cyan, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                val legend = listOf(
+                    Triple("فلز قلیایی", Color(0xFF9D3348), "گروه ۱"),
+                    Triple("فلز قلیایی خاکی", Color(0xFFB56A28), "گروه ۲"),
+                    Triple("فلز واسطه", Color(0xFF155DB5), "بلوک d"),
+                    Triple("فلز پس‌واسطه", Color(0xFF168A83), "فلزها"),
+                    Triple("شبه‌فلز", Color(0xFF479A54), "مرز فلز/نافلز"),
+                    Triple("نافلز", Color(0xFF248C78), "بلوک p و H"),
+                    Triple("هالوژن", Color(0xFF8753C5), "گروه ۱۷"),
+                    Triple("گاز نجیب", Color(0xFF6946BC), "گروه ۱۸"),
+                    Triple("لانتانید", Color(0xFFB24D9C), "ردیف f"),
+                    Triple("اکتینید", Color(0xFF80475E), "ردیف f")
+                )
+                legend.chunked(2).forEach { row ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { item ->
+                            Row(Modifier.weight(1f).background(Navy, RoundedCornerShape(10.dp)).padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(Modifier.size(11.dp).background(item.second, RoundedCornerShape(3.dp)))
+                                Spacer(Modifier.width(6.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(item.first, color = Ink, fontSize = 10.sp, maxLines = 1)
+                                    Text(item.third, color = Muted, fontSize = 9.sp)
+                                }
+                            }
+                        }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Panel), border = BorderStroke(1.dp, Color(0xFF9A8CFF).copy(alpha = .25f))) {
+            Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("کاربرد عناصر در دنیای واقعی", color = Cyan, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                ApplicationCard("Si", "سیلیسیم", "تراشه‌ها و نیمه‌رساناها", "در بسیاری از قطعات الکترونیکی و سلول‌های خورشیدی استفاده می‌شود.", Color(0xFF79F2B3))
+                ApplicationCard("Fe", "آهن", "فولاد و سازه‌ها", "عنصری مهم در تولید فولاد و آلیاژهای مهندسی.", Color(0xFFFFC96B))
+                ApplicationCard("Li", "لیتیم", "باتری‌های قابل شارژ", "در مواد کاتدی و الکترولیتی برخی باتری‌ها کاربرد دارد.", Color(0xFF9A8CFF))
+                ApplicationCard("O", "اکسیژن", "زیست و صنعت", "برای تنفس هوازی و بسیاری از فرایندهای اکسایش ضروری است.", Color(0xFF55E6EF))
+                ApplicationCard("Cu", "مس", "سیم‌کشی و انتقال گرما", "رسانایی الکتریکی و گرمایی بالایی دارد.", Color(0xFFFF8D70))
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Panel)) {
+            Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                Text("نمودار شماتیک انرژی", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("نمونهٔ تصویری برای مقایسهٔ مفهومی؛ دادهٔ آزمایشگاهی نیست.", color = Muted, fontSize = 11.sp)
+                Canvas(Modifier.fillMaxWidth().height(150.dp).padding(top = 10.dp)) {
+                    val values = listOf(.28f, .34f, .39f, .48f, .52f, .62f, .69f, .76f, .83f)
+                    val gap = size.width / (values.size * 1.7f)
+                    values.forEachIndexed { i, v ->
+                        val h = size.height * v
+                        val x = gap * (i * 1.7f + .35f)
+                        drawRoundRect(Brush.verticalGradient(listOf(Cyan, Color(0xFF6658C9))), topLeft = Offset(x, size.height - h), size = androidx.compose.ui.geometry.Size(gap, h), cornerRadius = androidx.compose.ui.geometry.CornerRadius(7f))
+                    }
+                    drawLine(Muted.copy(alpha = .45f), Offset(0f, size.height), Offset(size.width, size.height), 1f)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrendLine(title: String, subtitle: String, arrow: String, color: Color) {
+    Row(Modifier.fillMaxWidth().background(Navy, RoundedCornerShape(10.dp)).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(35.dp).background(color.copy(alpha = .15f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
+            Text(arrow, color = color, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+        }
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(title, color = Ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(subtitle, color = Muted, fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+private fun ApplicationCard(symbol: String, name: String, headline: String, detail: String, color: Color) {
+    Row(Modifier.fillMaxWidth().background(Navy, RoundedCornerShape(12.dp)).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(48.dp).background(Brush.radialGradient(listOf(Color.White.copy(alpha = .25f), color.copy(alpha = .35f))), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+            Text(symbol, color = color, fontSize = 20.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("$name · $headline", color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(detail, color = Muted, fontSize = 11.sp)
         }
     }
 }
@@ -318,7 +427,7 @@ private fun NativeMolecule(elements: List<Element>) {
             Text("MOLECULAR VIEW / 3D", color = Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             Text("نمایش چرخان شماتیک", color = Muted, fontSize = 10.sp)
         }
-        Canvas(Modifier.fillMaxWidth().height(150.dp)) {
+        Canvas(Modifier.fillMaxWidth().height(150.dp).pointerInput(Unit) { detectDragGestures { change, dragAmount -> change.consume(); dragRotation += dragAmount.x * 0.7f } }) {
             val cx = size.width / 2f
             val cy = size.height / 2f
             val count = elements.size.coerceAtMost(8)
@@ -327,7 +436,7 @@ private fun NativeMolecule(elements: List<Element>) {
                 drawCircle(Cyan, radius = 5f, center = Offset(cx, cy))
             } else {
                 val coords = (0 until count).map { i ->
-                    val theta = (2.0 * Math.PI * i / count) + Math.toRadians(angle.toDouble())
+                    val theta = (2.0 * Math.PI * i / count) + Math.toRadians((angle + dragRotation).toDouble())
                     val ring = if (count <= 2) 44.0 else if (i % 2 == 0) 55.0 else 38.0
                     val x3 = kotlin.math.cos(theta) * ring
                     val y3 = kotlin.math.sin(theta) * ring * .64
